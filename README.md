@@ -19,7 +19,7 @@ This repository contains the code and plots for the paper "**Relatable and Humor
 
 ### Data description
 
-The **ACII_ModelData_N20_V3.csv** used in the paper is available in the `data/` folder.
+The **ACII_ModelData_N20.csv** used in the paper is available in the `data/` folder.
 
 ### Data format
 
