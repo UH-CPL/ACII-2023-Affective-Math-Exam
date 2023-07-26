@@ -40,24 +40,24 @@ library(arm)  # display() # convenience functions for regression in R
 
 ```{r include=FALSE}
 
-#rm(list = ls())
+# rm(list = ls())
 dir <- dirname(rstudioapi::getSourceEditorContext()$path)
 setwd(dir)
 getwd()
 
 dataDir <- "../data/"
-Qlevel<- read.csv(paste0("../data/ACII_ModelData_N20.csv"),stringsAsFactors = T, header=T,sep=",")
+Qlevel <- read.csv(paste0("../data/ACII_ModelData_N20.csv"), stringsAsFactors = T, header = T, sep = ",")
 
 # paper.col.names <- c("ParticipantID","Gender","pp.mean","pp.log.mean","HR.E4.mean","HR.E4.validated.mean","HR.AW.mean", "pp_normalized","pp_log_normalized", "hr.e4_normalized","hr.e4_validated_normalized", "hr.aw_normalized",
 # "SAI.Score", "Question.Name","Question.Type", "Question.Order","Question.Number","q.solv.time","grade" )
-# 
+#
 # #reoder columns based on the description of ACII23 paper.
 # Qlevel <- Qlevel[paper.col.names]
 
 # colnames(Qlevel)
 
 # Save the Qlevel data with new column orders
-#write.csv(Qlevel,"../data/ACII_ModelData_N20.csv", row.names =F)
+# write.csv(Qlevel,"../data/ACII_ModelData_N20.csv", row.names =F)
 
 ```
 
@@ -109,12 +109,12 @@ Qlevel_rl <- within(Qlevel, Question.Type<- relevel(Question.Type, ref = "V") )
 
 # Create the significances legend
 library(cowplot)
-levels = c("B", "C")
-num = c( 10, 15)
-ymin = c( 0, 0)
-ymax = c( 2, 3)
+levels <- c("B", "C")
+num <- c(10, 15)
+ymin <- c(0, 0)
+ymax <- c(2, 3)
 
-Legend_DF = data.frame(levels, num, ymin, ymax)
+Legend_DF <- data.frame(levels, num, ymin, ymax)
 
 plot <- ggplot(Legend_DF, aes(x = levels, y = num, colour = levels)) +
   geom_errorbar(aes(ymin = ymin, ymax = ymax), size = 1.1) +
@@ -125,71 +125,62 @@ plot <- ggplot(Legend_DF, aes(x = levels, y = num, colour = levels)) +
     legend.position = "bottom",
     legend.direction = "horizontal",
     legend.title = element_blank(),
-    legend.key.width = unit(2, 'cm'),
+    legend.key.width = unit(2, "cm"),
     legend.text = element_text(size = 20)
   ) +
-  theme(axis.ticks.y = element_blank(),
-        axis.ticks.x = element_blank()) +
+  theme(
+    axis.ticks.y = element_blank(),
+    axis.ticks.x = element_blank()
+  ) +
   scale_color_manual(
     values = c("black", "red"),
-    #values = c("black", "#ee9a00", "red"),
+    # values = c("black", "#ee9a00", "red"),
     breaks = c("B", "C"),
     labels = c("NS     ", "***")
-  ) 
+  )
 # print(plot)
 
-mylegend = get_legend(plot)
+mylegend <- get_legend(plot)
 ```
 
 
 ```{r echo=FALSE, fig.height=7, fig.width=7}
 
-#pp.hr= ggarrange(pp.pred.final,hr.pred.final, nrow=1,labels = c("a", "b"))
-
-pp.hr = cowplot::plot_grid(
-      pp.pred.final, hr.pred.final,
-      nrow = 1,
-      scale = c(.97, .97),
-      labels = c("a", "b"),
-      label_size = 20
-      )
+pp.hr <- cowplot::plot_grid(
+  pp.pred.final, hr.pred.final,
+  nrow = 1,
+  scale = c(.97, .97),
+  labels = c("a", "b"),
+  label_size = 20
+)
 
 
-pp.hr.legend = cowplot::plot_grid( pp.hr,
-    mylegend,
-    nrow = 2,
-    rel_heights = c(1, .1)
-  )
+pp.hr.legend <- cowplot::plot_grid(pp.hr,
+  mylegend,
+  nrow = 2,
+  rel_heights = c(1, .1)
+)
 
-#pp.hr.legend
+# pp.hr.legend
 
 filename <- "PP.HR_FinalModel_Pred_N20.pdf"
-plot_dir = "../plots/"
+plot_dir <- "../plots/"
 full_path <- file.path(plot_dir, filename)
-#ggsave(full_path,  pp.hr.legend)
+# ggsave(full_path,  pp.hr.legend)
 
 
-# pp.hr.pred.final.legend = cowplot::plot_grid( pp.hr,pred.final,
-#     mylegend,
-#     nrow = 3,
-#     rel_heights = c(1,1, .2)
-#   )
 
-
-pp.hr.pred.final.legend = cowplot::plot_grid( pp.hr,mylegend, pred.final,
-    nrow = 3,
-    rel_heights = c(1,0.075,1)
-  )
+pp.hr.pred.final.legend <- cowplot::plot_grid(pp.hr, mylegend, pred.final,
+  nrow = 3,
+  rel_heights = c(1, 0.075, 1)
+)
 
 pp.hr.pred.final.legend
 
-filename <- "Figure2.pdf" #"Model_All_N20_V4.pdf"
-plot_dir = "../plots/"
+filename <- "Figure2.pdf" # "Model_All_N20_V4.pdf"
+plot_dir <- "../plots/"
 full_path <- file.path(plot_dir, filename)
-ggsave(full_path,  pp.hr.pred.final.legend)
-
-
-
+ggsave(full_path, pp.hr.pred.final.legend)
 
 ```
 

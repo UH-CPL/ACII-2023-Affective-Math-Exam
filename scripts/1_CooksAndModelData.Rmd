@@ -15,7 +15,19 @@ knitr::opts_chunk$set(
 ```
 
 ```{r include=FALSE}
+#rm(list = ls())
+dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(dir)
+getwd()
 
+# install and load required packages
+source("requirement.R")
+```
+
+
+
+
+```{r include=FALSE}
 library(tidyverse)
 library(lubridate)
 library(ggplot2)
@@ -34,17 +46,11 @@ library(lattice)
 library(sjPlot)
 library(Matrix)
 library(arm)  # display() # convenience functions for regression in R
-
 ```
 
 
 
 ```{r include=FALSE}
-
-#rm(list = ls())
-dir <- dirname(rstudioapi::getSourceEditorContext()$path)
-setwd(dir)
-getwd()
 
 dataDir <- "../data/"
 Df <- read.csv(paste0(dataDir, "ACII_RawData_N20.csv"), stringsAsFactors = T)
@@ -54,21 +60,22 @@ Df <- read.csv(paste0(dataDir, "ACII_RawData_N20.csv"), stringsAsFactors = T)
 
 ```{r echo=FALSE}
 # Baseline Data
-Df_BL  <- Df[Df$Session=="BL",]
+Df_BL <- Df[Df$Session == "BL", ]
 
 # Remove unnecessary columns
 Df_BL.SubSet <- subset(Df_BL,
-  select = c(ParticipantID,Perspiration, HR.E4, HR.AW, Time) )
+  select = c(ParticipantID, Perspiration, HR.E4, HR.AW, Time)
+)
 
 # Baseline new columns
-#Adding pp_log column to the data
-Df_BL.SubSet["pp_log"] = log(Df_BL.SubSet$Perspiration)
+# Adding pp_log column to the data
+Df_BL.SubSet["pp_log"] <- log(Df_BL.SubSet$Perspiration)
 
-#Sync E4 and AW HRs to have perfect E4
+# Sync E4 and AW HRs to have perfect E4
 # initialize the e4 perfect/ Validated
-Df_BL.SubSet$HR.E4_validated = Df_BL.SubSet$HR.E4
-#Add NAs to perfect where the AW has NAs
-Df_BL.SubSet[is.na(Df_BL.SubSet$HR.AW),]$HR.E4_validated <- NA
+Df_BL.SubSet$HR.E4_validated <- Df_BL.SubSet$HR.E4
+# Add NAs to perfect where the AW has NAs
+Df_BL.SubSet[is.na(Df_BL.SubSet$HR.AW), ]$HR.E4_validated <- NA
 
 ```
 
@@ -76,57 +83,57 @@ Df_BL.SubSet[is.na(Df_BL.SubSet$HR.AW),]$HR.E4_validated <- NA
 
 ```{r include=FALSE}
 # Exam data
-Df_Exam <- Df[Df$Session=="Exam",]
+Df_Exam <- Df[Df$Session == "Exam", ]
 
-#Remove unnecessary columns
-Df_Exam.SubSet <- subset(Df_Exam, select=-c(Session,Timestamp,Final.Thoughts,Calculator))
+# Remove unnecessary columns
+Df_Exam.SubSet <- subset(Df_Exam, select = -c(Session, Timestamp, Final.Thoughts, Calculator))
 
 ```
 
 ```{r include=FALSE}
 
-#Fill the NAs with previous values. 
-Df_Exam.SubSet<-Df_Exam.SubSet %>%fill(Question.Type)
-Df_Exam.SubSet<-Df_Exam.SubSet %>%fill(Question.Name)
-Df_Exam.SubSet<-Df_Exam.SubSet %>%fill(Question.Number)
-Df_Exam.SubSet<-Df_Exam.SubSet %>%fill(Question.Order)
-Df_Exam.SubSet<-Df_Exam.SubSet %>%fill(Accuracy.Score)
-Df_Exam.SubSet<-Df_Exam.SubSet %>%fill(Total.Attempts)
-Df_Exam.SubSet<-Df_Exam.SubSet %>%fill(Attempt)
+# Fill the NAs with previous values.
+Df_Exam.SubSet <- Df_Exam.SubSet %>% fill(Question.Type)
+Df_Exam.SubSet <- Df_Exam.SubSet %>% fill(Question.Name)
+Df_Exam.SubSet <- Df_Exam.SubSet %>% fill(Question.Number)
+Df_Exam.SubSet <- Df_Exam.SubSet %>% fill(Question.Order)
+Df_Exam.SubSet <- Df_Exam.SubSet %>% fill(Accuracy.Score)
+Df_Exam.SubSet <- Df_Exam.SubSet %>% fill(Total.Attempts)
+Df_Exam.SubSet <- Df_Exam.SubSet %>% fill(Attempt)
 
 
-#Remove Examples 
-Df_Exam.SubSet <- Df_Exam.SubSet[!Df_Exam.SubSet$Question.Type=="Example",]
+# Remove Examples
+Df_Exam.SubSet <- Df_Exam.SubSet[!Df_Exam.SubSet$Question.Type == "Example", ]
 
 # Remove 2nd and 3rd attempts
 # Means that take the all first attempts
-Df_Exam.SubSet <- Df_Exam.SubSet[Df_Exam.SubSet$Attempt==1,]
+Df_Exam.SubSet <- Df_Exam.SubSet[Df_Exam.SubSet$Attempt == 1, ]
 
-#Rename Accuracy.Score, correct =1, incorrect = 0, as Attempt.Correctness
-Df_Exam.SubSet<-Df_Exam.SubSet %>% rename("Attempt.Correctness" = "Accuracy.Score")
+# Rename Accuracy.Score, correct =1, incorrect = 0, as Attempt.Correctness
+Df_Exam.SubSet <- Df_Exam.SubSet %>% rename("Attempt.Correctness" = "Accuracy.Score")
 
-#Adding pp_log column to the data
-Df_Exam.SubSet["pp_log"] = log(Df_Exam.SubSet$Perspiration)
+# Adding pp_log column to the data
+Df_Exam.SubSet["pp_log"] <- log(Df_Exam.SubSet$Perspiration)
 
-Df_Exam.SubSet["HR.E4_validated"] = Df_Exam.SubSet$HR.E4
-#Add NAs to perfect where the AW has NAs
-Df_Exam.SubSet[is.na(Df_Exam.SubSet$HR.AW),]$HR.E4_validated <- NA
+Df_Exam.SubSet["HR.E4_validated"] <- Df_Exam.SubSet$HR.E4
+# Add NAs to perfect where the AW has NAs
+Df_Exam.SubSet[is.na(Df_Exam.SubSet$HR.AW), ]$HR.E4_validated <- NA
 
 # Update the index after sync
 rownames(Df_Exam.SubSet) <- 1:nrow(Df_Exam.SubSet)
 
-Df_Exam.SubSet<-droplevels(Df_Exam.SubSet)
+Df_Exam.SubSet <- droplevels(Df_Exam.SubSet)
 
 unique(Df_Exam.SubSet$Question.Type)
 names(Df_Exam.SubSet)
-Df_Exam.SubSet.beforeCook = Df_Exam.SubSet
+Df_Exam.SubSet.beforeCook <- Df_Exam.SubSet
 ```
 
 
 
 ```{r include=FALSE}
 # Removing Outliers at Signal Level
-signal.lm.HRs = lm(HR.E4_validated ~ HR.AW, data=Df_Exam.SubSet)
+signal.lm.HRs <- lm(HR.E4_validated ~ HR.AW, data = Df_Exam.SubSet)
 # Remove outlier with 95%
 cooksD <- cooks.distance(signal.lm.HRs)
 cooksD.95 <- quantile(cooksD, prob = c(.95))
@@ -134,8 +141,8 @@ cooksD.95 <- quantile(cooksD, prob = c(.95))
 influential <- cooksD[(cooksD > cooksD.95)]
 
 names_of_influential <- names(influential)
-#influential
-df_outlier <- Df_Exam.SubSet[names_of_influential,]
+# influential
+df_outlier <- Df_Exam.SubSet[names_of_influential, ]
 
 # Remove outliers
 Df_Exam.SubSet <- Df_Exam.SubSet %>% anti_join(df_outlier)
@@ -150,66 +157,69 @@ rownames(Df_Exam.SubSet) <- 1:nrow(Df_Exam.SubSet)
 
 
 ```{r echo=FALSE, fig.height=4.5, fig.width=10, warning=FALSE}
-#str(summ)
-signal.lm = lm(HR.E4 ~ HR.AW, data=Df_Exam.SubSet.beforeCook)
-# 
-summ<-summary(signal.lm)
+# str(summ)
+signal.lm <- lm(HR.E4 ~ HR.AW, data = Df_Exam.SubSet.beforeCook)
+#
+summ <- summary(signal.lm)
 
-p = round(summ$coefficients[1,4],5)
-r2 = round(summ$adj.r.squared,3)
-Response.beforeCook.len = colSums(!is.na(Df_Exam.SubSet.beforeCook))[["HR.AW"]]
+p <- round(summ$coefficients[1, 4], 5)
+r2 <- round(summ$adj.r.squared, 3)
+Response.beforeCook.len <- colSums(!is.na(Df_Exam.SubSet.beforeCook))[["HR.AW"]]
 
-bfrCD.plot <- ggplot(Df_Exam.SubSet.beforeCook, aes(x=HR.E4, y=HR.AW)) + 
-  geom_point() + 
+bfrCD.plot <- ggplot(Df_Exam.SubSet.beforeCook, aes(x = HR.E4, y = HR.AW)) +
+  geom_point() +
   geom_abline(colour = "red") +
-  ggtitle(bquote(paste(~italic("n"), " = " ,.(Response.beforeCook.len), "   p < 0.001","   adj.r.squared = ", .(r2) )))  +
-    theme(text = element_text(size=10),
-         # axis.text.x=element_blank(),
-        #  axis.ticks.x=element_blank(),
-           plot.title = element_text(hjust = 0.5, face = "bold"))
+  ggtitle(bquote(paste(~ italic("n"), " = ", .(Response.beforeCook.len), "   p < 0.001", "   adj.r.squared = ", .(r2)))) +
+  theme(
+    text = element_text(size = 10),
+    # axis.text.x=element_blank(),
+    #  axis.ticks.x=element_blank(),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
 ```
 
 
 
 ```{r echo=FALSE, fig.height=4.5, fig.width=10, warning=FALSE}
-#str(summ)
+# str(summ)
 
-signal.lm = lm(HR.E4 ~ HR.AW, data=Df_Exam.SubSet)
-# 
-summ<-summary(signal.lm)
+signal.lm <- lm(HR.E4 ~ HR.AW, data = Df_Exam.SubSet)
+#
+summ <- summary(signal.lm)
 
-p = round(summ$coefficients[1,4],5)
-r2 = round(summ$adj.r.squared,3)
-Response.len = colSums(!is.na(Df_Exam.SubSet))[["HR.AW"]]
+p <- round(summ$coefficients[1, 4], 5)
+r2 <- round(summ$adj.r.squared, 3)
+Response.len <- colSums(!is.na(Df_Exam.SubSet))[["HR.AW"]]
 
-aftrCD.plot <- ggplot(Df_Exam.SubSet, aes(x=HR.E4, y=HR.AW)) + 
-  geom_point() + 
+aftrCD.plot <- ggplot(Df_Exam.SubSet, aes(x = HR.E4, y = HR.AW)) +
+  geom_point() +
   geom_abline(colour = "red") +
-  ggtitle(bquote(paste(~italic("n"), " = " ,.(Response.len), "   p < 0.001","   adj.r.squared = ", .(r2) )))  +
-    theme(text = element_text(size=10),
-           plot.title = element_text(hjust = 0.5, face = "bold")
-          )
+  ggtitle(bquote(paste(~ italic("n"), " = ", .(Response.len), "   p < 0.001", "   adj.r.squared = ", .(r2)))) +
+  theme(
+    text = element_text(size = 10),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
 
-outlier.len = Response.beforeCook.len- Response.len
+outlier.len <- Response.beforeCook.len - Response.len
 
 ```
 
 ## Before and After Cook's Distance
 ```{r echo=FALSE, fig.height=10, fig.width=10, warning=FALSE}
 
-bfr.aftr = cowplot::plot_grid(
-      bfrCD.plot, aftrCD.plot,
-      nrow = 2,
-      scale = c(.97, .97),
-      labels = c("a", "b"),
-      label_size = 20
-      )
+bfr.aftr <- cowplot::plot_grid(
+  bfrCD.plot, aftrCD.plot,
+  nrow = 2,
+  scale = c(.97, .97),
+  labels = c("a", "b"),
+  label_size = 20
+)
 bfr.aftr
 
 filename <- "BeforeAfterCooks_N20.pdf"
-plot_dir = "../plots/"
+plot_dir <- "../plots/"
 full_path <- file.path(plot_dir, filename)
-#ggsave(full_path,  bfr.aftr)
+# ggsave(full_path,  bfr.aftr)
 
 ```
 
@@ -220,32 +230,32 @@ full_path <- file.path(plot_dir, filename)
 ```{r include=FALSE}
 
 # Baseline Means
-  Df_BL.Subset2 <-Df_BL.SubSet %>%
-  group_by(ParticipantID)%>%
+Df_BL.Subset2 <- Df_BL.SubSet %>%
+  group_by(ParticipantID) %>%
   summarise(
-    pp.mean=mean(Perspiration,na.rm=T),
-    pp.log.mean = mean(pp_log,na.rm=T),
-    HR.E4.mean=mean(HR.E4,na.rm=T),
-    HR.E4.validated.mean=mean(HR.E4_validated,na.rm=T),  
-    HR.AW.mean=mean(HR.AW,na.rm=T)
-        )
+    pp.mean = mean(Perspiration, na.rm = T),
+    pp.log.mean = mean(pp_log, na.rm = T),
+    HR.E4.mean = mean(HR.E4, na.rm = T),
+    HR.E4.validated.mean = mean(HR.E4_validated, na.rm = T),
+    HR.AW.mean = mean(HR.AW, na.rm = T)
+  )
 
 
 # Exam Means
-Df_Exam.Subset2 <-Df_Exam.SubSet%>%
-  group_by(ParticipantID, Question.Name,Question.Type)%>%
+Df_Exam.Subset2 <- Df_Exam.SubSet %>%
+  group_by(ParticipantID, Question.Name, Question.Type) %>%
   summarise(
     Question.Order = first(Question.Order),
     Question.Number = first(Question.Number),
     q.solv.time = n(),
     grade = first(Attempt.Correctness),
-    pp.mean=mean(Perspiration,na.rm=T),
-    pp.log.mean = mean(pp_log,na.rm=T),
-    HR.E4.mean=mean(HR.E4,na.rm=T), 
-    HR.E4.validated.mean=mean(HR.E4_validated,na.rm=T), 
-    HR.AW.mean=mean(HR.AW,na.rm=T))
-    #Time_mean = mean(Time, na.rm = T))
-
+    pp.mean = mean(Perspiration, na.rm = T),
+    pp.log.mean = mean(pp_log, na.rm = T),
+    HR.E4.mean = mean(HR.E4, na.rm = T),
+    HR.E4.validated.mean = mean(HR.E4_validated, na.rm = T),
+    HR.AW.mean = mean(HR.AW, na.rm = T)
+  )
+# Time_mean = mean(Time, na.rm = T))
 
 ```
 
@@ -255,46 +265,44 @@ Df_Exam.Subset2 <-Df_Exam.SubSet%>%
 
 # initialize new normalize columns
 
-Df_Exam.Subset2$pp_normalized = NA
-Df_Exam.Subset2$pp_log_normalized = NA
-Df_Exam.Subset2$hr.e4_normalized = NA
-Df_Exam.Subset2$hr.e4_validated_normalized = NA
-Df_Exam.Subset2$hr.aw_normalized = NA
+Df_Exam.Subset2$pp_normalized <- NA
+Df_Exam.Subset2$pp_log_normalized <- NA
+Df_Exam.Subset2$hr.e4_normalized <- NA
+Df_Exam.Subset2$hr.e4_validated_normalized <- NA
+Df_Exam.Subset2$hr.aw_normalized <- NA
 
-for (p in unique(Df_Exam.SubSet$ParticipantID) ){
-  #PP Mean
-  tmpExam_pp.mean = Df_Exam.Subset2[Df_Exam.Subset2$ParticipantID == p,]$pp.mean
-  tmpBL_pp.mean = Df_BL.Subset2[Df_BL.Subset2$ParticipantID == p,]$pp.mean
-  
-  # PP Log Mean 
-  tmpExam_PP_Log_Mean = Df_Exam.Subset2[Df_Exam.Subset2$ParticipantID == p,]$pp.log.mean 
-  tmpBL_PP_Log_Mean = Df_BL.Subset2[Df_BL.Subset2$ParticipantID == p,]$pp.log.mean
-  
-  #HR.E4 Mean
-  tmpExam_HR.E4_Mean = Df_Exam.Subset2[Df_Exam.Subset2$ParticipantID == p,]$HR.E4.mean 
-  tmpBL_HR.E4_Mean = Df_BL.Subset2[Df_BL.Subset2$ParticipantID == p,]$HR.E4.mean
+for (p in unique(Df_Exam.SubSet$ParticipantID)) {
+  # PP Mean
+  tmpExam_pp.mean <- Df_Exam.Subset2[Df_Exam.Subset2$ParticipantID == p, ]$pp.mean
+  tmpBL_pp.mean <- Df_BL.Subset2[Df_BL.Subset2$ParticipantID == p, ]$pp.mean
+
+  # PP Log Mean
+  tmpExam_PP_Log_Mean <- Df_Exam.Subset2[Df_Exam.Subset2$ParticipantID == p, ]$pp.log.mean
+  tmpBL_PP_Log_Mean <- Df_BL.Subset2[Df_BL.Subset2$ParticipantID == p, ]$pp.log.mean
+
+  # HR.E4 Mean
+  tmpExam_HR.E4_Mean <- Df_Exam.Subset2[Df_Exam.Subset2$ParticipantID == p, ]$HR.E4.mean
+  tmpBL_HR.E4_Mean <- Df_BL.Subset2[Df_BL.Subset2$ParticipantID == p, ]$HR.E4.mean
 
   # HR.E4_Perfect Mean
-  tmpExam_HR.E4_Perfect_Mean = Df_Exam.Subset2[Df_Exam.Subset2$ParticipantID == p,]$HR.E4.validated.mean 
-  tmpBL_HR.E4_Perfect_Mean = Df_BL.Subset2[Df_BL.Subset2$ParticipantID == p,]$HR.E4.validated.mean
-  
-  #HR.AW Mean
-  tmpExam_HR.AW_Mean = Df_Exam.Subset2[Df_Exam.Subset2$ParticipantID == p,]$HR.E4.mean 
-  tmpBL_HR.AW_Mean = Df_BL.Subset2[Df_BL.Subset2$ParticipantID == p,]$HR.AW.mean
+  tmpExam_HR.E4_Perfect_Mean <- Df_Exam.Subset2[Df_Exam.Subset2$ParticipantID == p, ]$HR.E4.validated.mean
+  tmpBL_HR.E4_Perfect_Mean <- Df_BL.Subset2[Df_BL.Subset2$ParticipantID == p, ]$HR.E4.validated.mean
 
-  
-  Df_Exam.Subset2[Df_Exam.Subset2$ParticipantID == p,]$pp_normalized = tmpExam_pp.mean - tmpBL_pp.mean
-  Df_Exam.Subset2[Df_Exam.Subset2$ParticipantID == p,]$pp_log_normalized  = tmpExam_PP_Log_Mean -tmpBL_PP_Log_Mean
-  Df_Exam.Subset2[Df_Exam.Subset2$ParticipantID == p,]$hr.e4_normalized = tmpExam_HR.E4_Mean - tmpBL_HR.E4_Mean
-  Df_Exam.Subset2[Df_Exam.Subset2$ParticipantID == p,]$hr.e4_validated_normalized = tmpExam_HR.E4_Perfect_Mean - tmpBL_HR.E4_Perfect_Mean
-  
-  Df_Exam.Subset2[Df_Exam.Subset2$ParticipantID == p,]$hr.aw_normalized = tmpExam_HR.AW_Mean - tmpBL_HR.AW_Mean
-  
-  
+  # HR.AW Mean
+  tmpExam_HR.AW_Mean <- Df_Exam.Subset2[Df_Exam.Subset2$ParticipantID == p, ]$HR.E4.mean
+  tmpBL_HR.AW_Mean <- Df_BL.Subset2[Df_BL.Subset2$ParticipantID == p, ]$HR.AW.mean
+
+
+  Df_Exam.Subset2[Df_Exam.Subset2$ParticipantID == p, ]$pp_normalized <- tmpExam_pp.mean - tmpBL_pp.mean
+  Df_Exam.Subset2[Df_Exam.Subset2$ParticipantID == p, ]$pp_log_normalized <- tmpExam_PP_Log_Mean - tmpBL_PP_Log_Mean
+  Df_Exam.Subset2[Df_Exam.Subset2$ParticipantID == p, ]$hr.e4_normalized <- tmpExam_HR.E4_Mean - tmpBL_HR.E4_Mean
+  Df_Exam.Subset2[Df_Exam.Subset2$ParticipantID == p, ]$hr.e4_validated_normalized <- tmpExam_HR.E4_Perfect_Mean - tmpBL_HR.E4_Perfect_Mean
+
+  Df_Exam.Subset2[Df_Exam.Subset2$ParticipantID == p, ]$hr.aw_normalized <- tmpExam_HR.AW_Mean - tmpBL_HR.AW_Mean
+
+
   print(p)
-  
 }
-
 
 ```
 
@@ -302,12 +310,16 @@ for (p in unique(Df_Exam.SubSet$ParticipantID) ){
 
 ```{r include=FALSE}
 
-rm(Qlevel)  
+rm(Qlevel)
 
-Qlevel <-merge(Df_Exam.Subset2, unique(Df_Exam.SubSet[,
-                                          c("ParticipantID","Gender","SAI.Score"#,"Attempt.Correctness"
-                                            )])
-                 , by.x = 'ParticipantID', by.y='ParticipantID', all.x=TRUE)
+Qlevel <- merge(Df_Exam.Subset2, unique(Df_Exam.SubSet[
+  ,
+  c(
+    "ParticipantID", "Gender", "SAI.Score" # ,"Attempt.Correctness"
+  )
+]),
+by.x = "ParticipantID", by.y = "ParticipantID", all.x = TRUE
+)
 
 colnames(Qlevel)
 
@@ -315,13 +327,13 @@ colnames(Qlevel)
 
 # paper.col.names <- c("ParticipantID","Gender","pp.mean","pp.log.mean","HR.E4.mean","HR.E4.validated.mean","HR.AW.mean", "pp_normalized","pp_log_normalized", "hr.e4_normalized","hr.e4_validated_normalized", "hr.aw_normalized",
 # "SAI.Score", "Question.Name","Question.Type", "Question.Order","Question.Number","q.solv.time","grade" )
-# 
+#
 # #reoder columns based on the description of ACII23 paper.
 # Qlevel <- Qlevel[paper.col.names]
 
 # colnames(Qlevel)
 
 # Save the Qlevel data with new column orders
-write.csv(Qlevel,"../data/ACII_ModelData_N20.csv", row.names =F)
+write.csv(Qlevel, "../data/ACII_ModelData_N20.csv", row.names = F)
 
 ```

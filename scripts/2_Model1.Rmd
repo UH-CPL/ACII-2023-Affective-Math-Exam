@@ -40,24 +40,24 @@ library(arm)  # display() # convenience functions for regression in R
 
 ```{r include=FALSE}
 
-#rm(list = ls())
+# rm(list = ls())
 dir <- dirname(rstudioapi::getSourceEditorContext()$path)
 setwd(dir)
 getwd()
 
 dataDir <- "../data/"
-Qlevel<- read.csv(paste0("../data/ACII_ModelData_N20.csv"),stringsAsFactors = T, header=T,sep=",")
+Qlevel <- read.csv(paste0("../data/ACII_ModelData_N20.csv"), stringsAsFactors = T, header = T, sep = ",")
 
 # paper.col.names <- c("ParticipantID","Gender","pp.mean","pp.log.mean","HR.E4.mean","HR.E4.validated.mean","HR.AW.mean", "pp_normalized","pp_log_normalized", "hr.e4_normalized","hr.e4_validated_normalized", "hr.aw_normalized",
 # "SAI.Score", "Question.Name","Question.Type", "Question.Order","Question.Number","q.solv.time","grade" )
-# 
+#
 # #reoder columns based on the description of ACII23 paper.
 # Qlevel <- Qlevel[paper.col.names]
 
 # colnames(Qlevel)
 
 # Save the Qlevel data with new column orders
-#write.csv(Qlevel,"../data/ACII_ModelData_N20.csv", row.names =F)
+# write.csv(Qlevel,"../data/ACII_ModelData_N20.csv", row.names =F)
 
 ```
 
@@ -65,27 +65,27 @@ Qlevel<- read.csv(paste0("../data/ACII_ModelData_N20.csv"),stringsAsFactors = T,
 
 ```{r echo=FALSE}
 
-#colSums(!is.na(SLevel))
-PP.len = colSums(!is.na(Qlevel))[["pp.log.mean"]]
-HR.len = colSums(!is.na(Qlevel))[["HR.E4.mean"]] 
-HR.Perf.len = colSums(!is.na(Qlevel))[["hr.e4_validated_normalized"]] 
+# colSums(!is.na(SLevel))
+PP.len <- colSums(!is.na(Qlevel))[["pp.log.mean"]]
+HR.len <- colSums(!is.na(Qlevel))[["HR.E4.mean"]]
+HR.Perf.len <- colSums(!is.na(Qlevel))[["hr.e4_validated_normalized"]]
 
-HR.Perf.len = colSums(!is.na(Qlevel))[["hr.e4_validated_normalized"]]
-
-
-AW.len = colSums(!is.na(Qlevel))[["HR.AW.mean"]] 
-
-pId.len =length(unique(Qlevel$ParticipantID)) 
-pp.pId.len =length(unique(Qlevel$ParticipantID)) - 1 
+HR.Perf.len <- colSums(!is.na(Qlevel))[["hr.e4_validated_normalized"]]
 
 
-W.len = table(Qlevel$Question.Type)[['W']]
-A.len = table(Qlevel$Question.Type)[['A']]
-V.len = table(Qlevel$Question.Type)[['V']]
+AW.len <- colSums(!is.na(Qlevel))[["HR.AW.mean"]]
 
-HR.W.len = table(Qlevel[!is.na(Qlevel$HR.E4.validated.mean),]$Question.Type)[['W']]
-HR.A.len = table(Qlevel[!is.na(Qlevel$HR.E4.validated.mean),]$Question.Type)[['A']]
-HR.V.len = table(Qlevel[!is.na(Qlevel$HR.E4.validated.mean),]$Question.Type)[['V']]
+pId.len <- length(unique(Qlevel$ParticipantID))
+pp.pId.len <- length(unique(Qlevel$ParticipantID)) - 1
+
+
+W.len <- table(Qlevel$Question.Type)[["W"]]
+A.len <- table(Qlevel$Question.Type)[["A"]]
+V.len <- table(Qlevel$Question.Type)[["V"]]
+
+HR.W.len <- table(Qlevel[!is.na(Qlevel$HR.E4.validated.mean), ]$Question.Type)[["W"]]
+HR.A.len <- table(Qlevel[!is.na(Qlevel$HR.E4.validated.mean), ]$Question.Type)[["A"]]
+HR.V.len <- table(Qlevel[!is.na(Qlevel$HR.E4.validated.mean), ]$Question.Type)[["V"]]
 
 ```
 
@@ -93,11 +93,11 @@ HR.V.len = table(Qlevel[!is.na(Qlevel$HR.E4.validated.mean),]$Question.Type)[['V
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 # Base gender F
-Qlevel_rl <- within(Qlevel, Gender<- relevel(Gender, ref = "F") )
+Qlevel_rl <- within(Qlevel, Gender <- relevel(Gender, ref = "F"))
 
 # Base Question.Type V
 Qlevel_rl$Question.Type <- factor(Qlevel_rl$Question.Type)
-Qlevel_rl <- within(Qlevel, Question.Type<- relevel(Question.Type, ref = "V") )
+Qlevel_rl <- within(Qlevel, Question.Type <- relevel(Question.Type, ref = "V"))
 
 
 ```
@@ -115,11 +115,11 @@ Qlevel_rl <- within(Qlevel, Question.Type<- relevel(Question.Type, ref = "V") )
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 M1.pp.log.fit.fm <- lmer(pp_log_normalized ~ (1 | ParticipantID) + SAI.Score +
-                    Question.Type + q.solv.time+ grade,
-                  data = Qlevel_rl, REML=FALSE
-                  )
+  Question.Type + q.solv.time + grade,
+data = Qlevel_rl, REML = FALSE
+)
 
-mod_summary<-summary(M1.pp.log.fit.fm) 
+mod_summary <- summary(M1.pp.log.fit.fm)
 
 mod_summary
 
@@ -128,9 +128,9 @@ mod_summary
 ## Full Model AIC
 ```{r echo=FALSE}
 
-aic.full<- AIC(M1.pp.log.fit.fm)
-#aic.bw
-cat("Full Model AIC:" ,aic.full)
+aic.full <- AIC(M1.pp.log.fit.fm)
+# aic.bw
+cat("Full Model AIC:", aic.full)
 ```
 
 
@@ -141,12 +141,12 @@ cat("Full Model AIC:" ,aic.full)
 
 # Create the significances legend
 library(cowplot)
-levels = c("B", "C")
-num = c( 10, 15)
-ymin = c( 0, 0)
-ymax = c( 2, 3)
+levels <- c("B", "C")
+num <- c(10, 15)
+ymin <- c(0, 0)
+ymax <- c(2, 3)
 
-Legend_DF = data.frame(levels, num, ymin, ymax)
+Legend_DF <- data.frame(levels, num, ymin, ymax)
 
 plot <- ggplot(Legend_DF, aes(x = levels, y = num, colour = levels)) +
   geom_errorbar(aes(ymin = ymin, ymax = ymax), size = 1.1) +
@@ -157,48 +157,53 @@ plot <- ggplot(Legend_DF, aes(x = levels, y = num, colour = levels)) +
     legend.position = "bottom",
     legend.direction = "horizontal",
     legend.title = element_blank(),
-    legend.key.width = unit(2, 'cm'),
+    legend.key.width = unit(2, "cm"),
     legend.text = element_text(size = 20)
   ) +
-  theme(axis.ticks.y = element_blank(),
-        axis.ticks.x = element_blank()) +
+  theme(
+    axis.ticks.y = element_blank(),
+    axis.ticks.x = element_blank()
+  ) +
   scale_color_manual(
     values = c("black", "red"),
-    #values = c("black", "#ee9a00", "red"),
+    # values = c("black", "#ee9a00", "red"),
     breaks = c("B", "C"),
     labels = c("NS     ", "***")
-  ) 
+  )
 # print(plot)
 
-mylegend = get_legend(plot)
+mylegend <- get_legend(plot)
 ```
 
 
 ```{r fig.height=3.5, include=FALSE}
 
 # Question Class
-qc.pm<-plot_model(M1.pp.log.fit.fm, 
-             type = "pred", 
-             terms = "Question.Type",
-             dot.size = 6,
-             line.size = 2,
-             title = "Question Class") +  theme_bw()+
-    aes(color = c("1", "2", "3")) +
-    scale_color_manual( values = c( "gray","black","red")) +
-      theme(panel.grid = element_blank(),
-        plot.title = element_text(hjust = 0.5), 
-        axis.text.x = element_text(size = 10, face = "bold"),
-        axis.text.y = element_text(size = 10, face = "bold"),
-        legend.position = "none"
-        )+ labs(x="", y="")
+qc.pm <- plot_model(M1.pp.log.fit.fm,
+  type = "pred",
+  terms = "Question.Type",
+  dot.size = 6,
+  line.size = 2,
+  title = "Question Class"
+) + theme_bw() +
+  aes(color = c("1", "2", "3")) +
+  scale_color_manual(values = c("gray", "black", "red")) +
+  theme(
+    panel.grid = element_blank(),
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(size = 10, face = "bold"),
+    axis.text.y = element_text(size = 10, face = "bold"),
+    legend.position = "none"
+  ) + labs(x = "", y = "")
 
 # Correctness
 ac.pm <- plot_model(M1.pp.log.fit.fm,
-             type = "pred", 
-             terms = "grade",
-             dot.size = 6,
-             line.size = 2,
-             title = "Question Grade")  + 
+  type = "pred",
+  terms = "grade",
+  dot.size = 6,
+  line.size = 2,
+  title = "Question Grade"
+) +
   # aes(color = "grade") +
   # scale_color_manual(values = "black") +
   geom_vline(
@@ -206,70 +211,75 @@ ac.pm <- plot_model(M1.pp.log.fit.fm,
     linetype = "dashed",
     color = "gray",
     size = 1
-  )+  theme_bw()+
-  theme(panel.grid = element_blank(),
-        axis.title.y = element_blank(),
-        plot.title = element_text(hjust = 0.5), 
-        axis.text.x = element_text(size = 10, face = "bold"),
-        axis.text.y = element_text(size = 10, face = "bold"),
-        legend.position = "none"
-        )+ labs(x="", y="")
+  ) + theme_bw() +
+  theme(
+    panel.grid = element_blank(),
+    axis.title.y = element_blank(),
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(size = 10, face = "bold"),
+    axis.text.y = element_text(size = 10, face = "bold"),
+    legend.position = "none"
+  ) + labs(x = "", y = "")
 
 
 
 # Solving Time
-qst.pm <- plot_model(M1.pp.log.fit.fm, 
-             type = "pred", 
-             terms = "q.solv.time",
-             dot.size = 6,
-             line.size = 2,
-             title = "Question Time")+ 
-        #aes(color = "q.solv.time") +
-        #scale_color_manual(values = "orange") +
-        geom_vline(
-          xintercept = mean(Qlevel_rl$q.solv.time),
-          linetype = "dashed",
-          color = "gray",
-          size = 1
-        )+  theme_bw()+
-        theme(panel.grid = element_blank(),
-              axis.title.y = element_blank(),
-              plot.title = element_text(hjust = 0.5), 
-              axis.text.x = element_text(size = 10, face = "bold"),
-              axis.text.y = element_text(size = 10, face = "bold"),
-              legend.position = "none"
-              )+ labs(x="", y="")
+qst.pm <- plot_model(M1.pp.log.fit.fm,
+  type = "pred",
+  terms = "q.solv.time",
+  dot.size = 6,
+  line.size = 2,
+  title = "Question Time"
+) +
+  # aes(color = "q.solv.time") +
+  # scale_color_manual(values = "orange") +
+  geom_vline(
+    xintercept = mean(Qlevel_rl$q.solv.time),
+    linetype = "dashed",
+    color = "gray",
+    size = 1
+  ) + theme_bw() +
+  theme(
+    panel.grid = element_blank(),
+    axis.title.y = element_blank(),
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(size = 10, face = "bold"),
+    axis.text.y = element_text(size = 10, face = "bold"),
+    legend.position = "none"
+  ) + labs(x = "", y = "")
 
 
-sai.pm<-plot_model(M1.pp.log.fit.fm, 
-             type = "pred", 
-             terms = "SAI.Score",
-             dot.size = 6,
-             line.size = 2,
-             title = "SAI Score")+ 
-        geom_vline(
-          xintercept = mean(Qlevel_rl$SAI.Score),
-          linetype = "dashed",
-          color = "gray",
-          size = 1
-        )+  theme_bw()+
-        theme(panel.grid = element_blank(),
-              axis.title.y = element_blank(),
-              plot.title = element_text(hjust = 0.5), 
-              axis.text.x = element_text(size = 10, face = "bold"),
-              axis.text.y = element_text(size = 10, face = "bold"),
-              legend.position = "none"
-              )+ labs(x="", y="")
+sai.pm <- plot_model(M1.pp.log.fit.fm,
+  type = "pred",
+  terms = "SAI.Score",
+  dot.size = 6,
+  line.size = 2,
+  title = "SAI Score"
+) +
+  geom_vline(
+    xintercept = mean(Qlevel_rl$SAI.Score),
+    linetype = "dashed",
+    color = "gray",
+    size = 1
+  ) + theme_bw() +
+  theme(
+    panel.grid = element_blank(),
+    axis.title.y = element_blank(),
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(size = 10, face = "bold"),
+    axis.text.y = element_text(size = 10, face = "bold"),
+    legend.position = "none"
+  ) + labs(x = "", y = "")
 
 ```
 
 
 
 ```{r echo=FALSE, warning=FALSE}
-full.final <- ggarrange(qc.pm,  ac.pm, qst.pm, sai.pm ,   ncol = 2, nrow=2)
-#full.final
+full.final <- ggarrange(qc.pm, ac.pm, qst.pm, sai.pm, ncol = 2, nrow = 2)
+# full.final
 
-withLegend = cowplot::plot_grid(full.final,mylegend, nrow=2,rel_heights = c(.9,.1))
+withLegend <- cowplot::plot_grid(full.final, mylegend, nrow = 2, rel_heights = c(.9, .1))
 withLegend
 ```
 
@@ -278,14 +288,16 @@ withLegend
 ```{r echo=FALSE, fig.height=4}
 
 m.plot <- sjPlot::plot_model(M1.pp.log.fit.fm,
-                   show.values=TRUE, show.p=TRUE,
-                   title="") + 
-  theme(plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
-          axis.text = element_text(size = 10)
-       ) + theme_bw()
+  show.values = TRUE, show.p = TRUE,
+  title = ""
+) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.text = element_text(size = 10)
+  ) + theme_bw()
 
 # update the terms name.
-m.plot$data$term <- c("SAI.Score", "Question.TypeA",  "Question.TypeV",  "Question Time", "Question Grade")
+m.plot$data$term <- c("SAI.Score", "Question.TypeA", "Question.TypeV", "Question Time", "Question Grade")
 
 m.plot
 ```
@@ -313,15 +325,15 @@ M1.pp.log.fit.fm.bw <- eval(suggested_fm)
 ## Normalized PP_log Optimal Model by BE
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-#display(M1.pp.log.fit.fm.bw)
+# display(M1.pp.log.fit.fm.bw)
 summary(M1.pp.log.fit.fm.bw)
-aic.bw<- AIC(M1.pp.log.fit.fm.bw)
+aic.bw <- AIC(M1.pp.log.fit.fm.bw)
 
-#aic.bw
-cat("\nOptimal Model of BE AIC:" ,aic.bw , "\n\n")
+# aic.bw
+cat("\nOptimal Model of BE AIC:", aic.bw, "\n\n")
 
-#aic.full
-cat("Full Model AIC:" ,AIC(M1.pp.log.fit.fm))
+# aic.full
+cat("Full Model AIC:", AIC(M1.pp.log.fit.fm))
 ```
 
 ## Optimal Model Plots
@@ -332,24 +344,26 @@ summary(M1.pp.log.fit.fm.bw)
 # SAI.Score(red)  + Question.Type (A red), (V blue) + q.solv.time (blue)
 
 
-qc.pm<-plot_model(M1.pp.log.fit.fm.bw, 
-             type = "pred", 
-             terms = "Question.Type",
-             dot.size = 6,
-             line.size = 2,
-             title = "") +  theme_bw()+
-      #aes(color = "Question.Type") +
-      #scale_color_manual(values = "orange") +
-    aes(color = c("1", "2", "3")) + # V      A      W
-    scale_color_manual( values = c( "gray","black","red")) +
-  #scale_x_discrete(labels  = c("V" = "VV","A" = "AA","W" = "WW"))+
-  #scale_x_discrete(limits = c("1", "2", "3"))+
-      theme(panel.grid = element_blank(),
-        plot.title = element_text(hjust = 0.5), 
-        axis.text.x = element_text(size = 10, face = "bold.italic"),
-        axis.text.y = element_text(size = 10, face = "bold"),
-        legend.position = "none"
-        )+   labs(x="", y=expression(bold(paste(bar(Delta *ln*" "*bolditalic(EDA[f]) * ""), "  [", degree, "C"^2, "]"))))
+qc.pm <- plot_model(M1.pp.log.fit.fm.bw,
+  type = "pred",
+  terms = "Question.Type",
+  dot.size = 6,
+  line.size = 2,
+  title = ""
+) + theme_bw() +
+  # aes(color = "Question.Type") +
+  # scale_color_manual(values = "orange") +
+  aes(color = c("1", "2", "3")) + # V      A      W
+  scale_color_manual(values = c("gray", "black", "red")) +
+  # scale_x_discrete(labels  = c("V" = "VV","A" = "AA","W" = "WW"))+
+  # scale_x_discrete(limits = c("1", "2", "3"))+
+  theme(
+    panel.grid = element_blank(),
+    plot.title = element_text(hjust = 0.5),
+    axis.text.x = element_text(size = 10, face = "bold.italic"),
+    axis.text.y = element_text(size = 10, face = "bold"),
+    legend.position = "none"
+  ) + labs(x = "", y = expression(bold(paste(bar(Delta * ln * " " * bolditalic(EDA[f]) * ""), "  [", degree, "C"^2, "]"))))
 #  labs(x="", y=expression(bold(paste(bar(Delta*ln*EDA[f] * ""), "   [", degree, " C"^2, "]"))))
 
 qc.pm
@@ -359,43 +373,44 @@ qc.pm
 
 
 ```{r echo=FALSE}
-pp.pred.final <- ggarrange(qc.pm,ncol = 1, nrow=1)
-final_plot =  cowplot::plot_grid(pp.pred.final,mylegend,nrow=2, rel_heights = c(.9,.1))
+pp.pred.final <- ggarrange(qc.pm, ncol = 1, nrow = 1)
+final_plot <- cowplot::plot_grid(pp.pred.final, mylegend, nrow = 2, rel_heights = c(.9, .1))
 final_plot
 
 filename <- "PP_FinalModel_Pred_N20.pdf"
-plot_dir = "../plots/"
+plot_dir <- "../plots/"
 full_path <- file.path(plot_dir, filename)
-#ggsave(full_path,  final_plot)
+# ggsave(full_path,  final_plot)
 
 ```
 
 ```{r echo=FALSE}
 
-qc.pm.re<-plot_model(M1.pp.log.fit.fm.bw, 
-             type = "re", 
-             show.values = TRUE, value.offset = .3)+
-    theme_bw() +
+qc.pm.re <- plot_model(M1.pp.log.fit.fm.bw,
+  type = "re",
+  show.values = TRUE, value.offset = .3
+) +
+  theme_bw() +
   theme(
     axis.text.x = element_text(size = 10, face = "bold"),
     axis.text.y = element_text(size = 10, face = "bold"),
     plot.title = element_blank()
   )
 
-#qc.pm.re
+# qc.pm.re
 
 ```
 
 
 ```{r echo=FALSE}
 
-re.final <- ggarrange(qc.pm.re, nrow=1)
-re.final_plot =  cowplot::plot_grid(re.final, nrow=2, rel_heights = c(.9,.1))
+re.final <- ggarrange(qc.pm.re, nrow = 1)
+re.final_plot <- cowplot::plot_grid(re.final, nrow = 2, rel_heights = c(.9, .1))
 re.final_plot
 
 filename <- "PP_FinalModel_RE_N20.pdf"
-plot_dir = "../plots/"
+plot_dir <- "../plots/"
 full_path <- file.path(plot_dir, filename)
-#ggsave(full_path,  re.final_plot)
+# ggsave(full_path,  re.final_plot)
 
 ```
