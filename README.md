@@ -10,8 +10,8 @@ This repository contains the code and plots for the paper "**Relatable and Humor
 ### Installation
 1. Clone this repository.
 2. Install the required packages.
-    - Open the `R/requirements.R` file in RStudio.
-    - Run the code in the `R/requirements.R` file.
+    - Open the `scripts/requirements.R` file in RStudio.
+    - Run the code in the `scripts/requirements.R` file.
 
 3. Run the scripts in the `scripts/` folder to generate the data and plots.
 
