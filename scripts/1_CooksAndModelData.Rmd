@@ -41,7 +41,7 @@ library(arm)  # display() # convenience functions for regression in R
 
 ```{r include=FALSE}
 
-rm(list = ls())
+#rm(list = ls())
 dir <- dirname(rstudioapi::getSourceEditorContext()$path)
 setwd(dir)
 getwd()
