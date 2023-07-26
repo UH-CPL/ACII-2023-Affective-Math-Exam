@@ -1,0 +1,196 @@
+---
+title: "ACII Fig.2"
+author: "Fettah Kiran"
+date: "`r Sys.Date()`"
+output: pdf_document
+toc: True
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = FALSE,
+	warning = FALSE
+)
+```
+
+```{r include=FALSE}
+
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(cowplot)
+library(ggpubr)
+library(readr)
+library(gridExtra)
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(MASS)
+library("car")
+library(lme4)
+library(lmerTest)
+library(lattice)
+library(sjPlot)
+library(Matrix)
+library(arm)  # display() # convenience functions for regression in R
+
+```
+
+
+```{r include=FALSE}
+
+#rm(list = ls())
+dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(dir)
+getwd()
+
+dataDir <- "../data/"
+Qlevel<- read.csv(paste0("../data/ACII_ModelData_N20.csv"),stringsAsFactors = T, header=T,sep=",")
+
+# paper.col.names <- c("ParticipantID","Gender","pp.mean","pp.log.mean","HR.E4.mean","HR.E4.validated.mean","HR.AW.mean", "pp_normalized","pp_log_normalized", "hr.e4_normalized","hr.e4_validated_normalized", "hr.aw_normalized",
+# "SAI.Score", "Question.Name","Question.Type", "Question.Order","Question.Number","q.solv.time","grade" )
+# 
+# #reoder columns based on the description of ACII23 paper.
+# Qlevel <- Qlevel[paper.col.names]
+
+# colnames(Qlevel)
+
+# Save the Qlevel data with new column orders
+#write.csv(Qlevel,"../data/ACII_ModelData_N20.csv", row.names =F)
+
+```
+
+
+
+```{r echo=FALSE}
+
+#colSums(!is.na(SLevel))
+PP.len = colSums(!is.na(Qlevel))[["pp.log.mean"]]
+HR.len = colSums(!is.na(Qlevel))[["HR.E4.mean"]] 
+HR.Perf.len = colSums(!is.na(Qlevel))[["hr.e4_validated_normalized"]] 
+
+HR.Perf.len = colSums(!is.na(Qlevel))[["hr.e4_validated_normalized"]]
+
+
+AW.len = colSums(!is.na(Qlevel))[["HR.AW.mean"]] 
+
+pId.len =length(unique(Qlevel$ParticipantID)) 
+pp.pId.len =length(unique(Qlevel$ParticipantID)) - 1 
+
+
+W.len = table(Qlevel$Question.Type)[['W']]
+A.len = table(Qlevel$Question.Type)[['A']]
+V.len = table(Qlevel$Question.Type)[['V']]
+
+HR.W.len = table(Qlevel[!is.na(Qlevel$HR.E4.validated.mean),]$Question.Type)[['W']]
+HR.A.len = table(Qlevel[!is.na(Qlevel$HR.E4.validated.mean),]$Question.Type)[['A']]
+HR.V.len = table(Qlevel[!is.na(Qlevel$HR.E4.validated.mean),]$Question.Type)[['V']]
+
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+# Base gender F
+Qlevel_rl <- within(Qlevel, Gender<- relevel(Gender, ref = "F") )
+
+# Base Question.Type V
+Qlevel_rl$Question.Type <- factor(Qlevel_rl$Question.Type)
+Qlevel_rl <- within(Qlevel, Question.Type<- relevel(Question.Type, ref = "V") )
+
+
+```
+
+# Figure 2
+
+
+```{r,echo=FALSE, warning=FALSE}
+
+# Create the significances legend
+library(cowplot)
+levels = c("B", "C")
+num = c( 10, 15)
+ymin = c( 0, 0)
+ymax = c( 2, 3)
+
+Legend_DF = data.frame(levels, num, ymin, ymax)
+
+plot <- ggplot(Legend_DF, aes(x = levels, y = num, colour = levels)) +
+  geom_errorbar(aes(ymin = ymin, ymax = ymax), size = 1.1) +
+  theme_bw() +
+  theme(
+    panel.grid = element_blank(),
+    axis.text.x = element_text(face = "bold", size = 10),
+    legend.position = "bottom",
+    legend.direction = "horizontal",
+    legend.title = element_blank(),
+    legend.key.width = unit(2, 'cm'),
+    legend.text = element_text(size = 20)
+  ) +
+  theme(axis.ticks.y = element_blank(),
+        axis.ticks.x = element_blank()) +
+  scale_color_manual(
+    values = c("black", "red"),
+    #values = c("black", "#ee9a00", "red"),
+    breaks = c("B", "C"),
+    labels = c("NS     ", "***")
+  ) 
+# print(plot)
+
+mylegend = get_legend(plot)
+```
+
+
+```{r echo=FALSE, fig.height=7, fig.width=7}
+
+#pp.hr= ggarrange(pp.pred.final,hr.pred.final, nrow=1,labels = c("a", "b"))
+
+pp.hr = cowplot::plot_grid(
+      pp.pred.final, hr.pred.final,
+      nrow = 1,
+      scale = c(.97, .97),
+      labels = c("a", "b"),
+      label_size = 20
+      )
+
+
+pp.hr.legend = cowplot::plot_grid( pp.hr,
+    mylegend,
+    nrow = 2,
+    rel_heights = c(1, .1)
+  )
+
+#pp.hr.legend
+
+filename <- "PP.HR_FinalModel_Pred_N20.pdf"
+plot_dir = "../plots/"
+full_path <- file.path(plot_dir, filename)
+#ggsave(full_path,  pp.hr.legend)
+
+
+# pp.hr.pred.final.legend = cowplot::plot_grid( pp.hr,pred.final,
+#     mylegend,
+#     nrow = 3,
+#     rel_heights = c(1,1, .2)
+#   )
+
+
+pp.hr.pred.final.legend = cowplot::plot_grid( pp.hr,mylegend, pred.final,
+    nrow = 3,
+    rel_heights = c(1,0.075,1)
+  )
+
+pp.hr.pred.final.legend
+
+filename <- "Figure2.pdf" #"Model_All_N20_V4.pdf"
+plot_dir = "../plots/"
+full_path <- file.path(plot_dir, filename)
+ggsave(full_path,  pp.hr.pred.final.legend)
+
+
+
+
+```
+
+
