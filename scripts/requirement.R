@@ -27,6 +27,8 @@ check_and_install("lattice")
 check_and_install("sjPlot")
 check_and_install("Matrix")
 check_and_install("arm")
+check_and_install("glmmTMB")
+
 
 # Load required libraries
 library(tidyverse)
@@ -48,4 +50,5 @@ library(lattice)
 library(sjPlot)
 library(Matrix)
 library(arm)
+library(glmmTMB)
 
