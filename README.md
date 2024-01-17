@@ -7,6 +7,11 @@ This repository contains the code and plots for the paper "**Relatable and Humor
 - R and RStudio
 - Required packages
 
+> sessionInfo()
+R version 4.2.2 (2022-10-31)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Ventura 13.5
+
 ### Installation
 1. Clone this repository.
 2. Install the required packages.
